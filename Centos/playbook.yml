@@ -1,0 +1,12 @@
+---
+- hosts: all
+  become: yes
+  gather_facts: no
+  vars:
+    python_version: 3.9.6
+  
+  tasks:
+  - name: Install Python
+    yum:
+      name: "@Development tools"
+      state: present
