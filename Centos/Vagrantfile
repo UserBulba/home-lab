@@ -1,19 +1,22 @@
+# Vagrantfile API/syntax version. Don't touch unless you know what you're doing!
+VAGRANTFILE_API_VERSION = "2"
+
 Vagrant.configure("2") do |config|
-  config.vm.box_check_update = "false"
+  config.vbguest.auto_update = false
   config.vm.provider "virtualbox" do |vb|
     vb.memory = "512"
     vb.cpus = 1
     vb.gui = false
 end
 
-config.vm.define "Centos01" do |web|
-  web.vm.hostname = "lab-01"
-  web.vm.box = "centos/stream8"
-  web.vm.network :private_network, ip: "172.20.20.10"
-  web.vm.synced_folder "/opt/shared", "/shared"
+config.vm.define "Centos01" do |c01|
+  c01.vm.hostname = "lab-01"
+  c01.vm.box = "centos/stream8"
+  c01.vm.network :private_network, ip: "172.20.20.10"
+  c01.vm.synced_folder "shared", "/opt/shared"
 
-  # Provision the webserver with Ansible
-  web.vm.provision "ansible" do |ansible|
+  # Provision the c01 server with Ansible
+  c01.vm.provision :guest_ansible do |ansible|
     ansible.playbook = "playbook.yml"
   end
  end
