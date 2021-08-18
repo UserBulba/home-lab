@@ -16,9 +16,10 @@ config.vm.define "Centos01" do |c01|
   c01.vm.synced_folder "shared", "/opt/shared", type: "rsync"
 
   # Provision the c01 server with Ansible
-  c01.vm.provision :guest_ansible do |ansible|
+  # c01.vm.provision :guest_ansible do |ansible|
+  
+  config.vm.provision 'base', type: 'ansible_local' do |ansible|
     ansible.playbook = "playbook.yml"
-    ansible.install_mode = "pip3"
     ansible.extra_vars = {ansible_python_interpreter: "/usr/bin/env python3"}
   end
  end

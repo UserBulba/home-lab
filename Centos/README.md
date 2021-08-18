@@ -11,3 +11,7 @@ Next run:
 ```vagrant
 vagrant up
 ```
+
+```instal VirtualBox guest system
+vagrant plugin install vagrant-vbguest
+```
