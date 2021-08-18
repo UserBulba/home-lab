@@ -13,11 +13,13 @@ config.vm.define "Centos01" do |c01|
   c01.vm.hostname = "lab-01"
   c01.vm.box = "centos/stream8"
   c01.vm.network :private_network, ip: "172.20.20.10"
-  c01.vm.synced_folder "shared", "/opt/shared"
+  c01.vm.synced_folder "shared", "/opt/shared", type: "rsync"
 
   # Provision the c01 server with Ansible
   c01.vm.provision :guest_ansible do |ansible|
     ansible.playbook = "playbook.yml"
+    ansible.install_mode = "pip3"
+    ansible.extra_vars = {ansible_python_interpreter: "/usr/bin/env python3"}
   end
  end
 end

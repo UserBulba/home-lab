@@ -14,4 +14,5 @@ IF(!(Test-Path $Share))
 ELSE {Write-Host "Path - $Share - already exists" -ForegroundColor Green}
 
 # Build vagrant.
+Invoke-Expression -Command "vagrant plugin install vagrant-vbguest"
 Invoke-Expression -Command "vagrant up"
