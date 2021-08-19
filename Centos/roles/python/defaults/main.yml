@@ -1,0 +1,14 @@
+python_packages:
+- libffi-devel
+- zlib-devel
+- bzip2-devel
+- openssl-devel
+- openssl-devel
+- ncurses-devel
+- sqlite-devel
+- readline-devel
+- tk-devel
+- gdbm-devel
+- xz-devel
+- expat-devel
+- postgresql-devel
