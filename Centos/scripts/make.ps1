@@ -2,6 +2,8 @@
 
 [Parameter()][string]$Share = "shared"
 
+Push-Location -Path ..\
+
 IF(!(Test-Path $Share))
 {
     Try 
@@ -16,3 +18,5 @@ ELSE {Write-Host "Path - $Share - already exists" -ForegroundColor Green}
 # Build vagrant.
 Invoke-Expression -Command "vagrant plugin install vagrant-vbguest"
 Invoke-Expression -Command "vagrant up"
+
+Pop-Location

@@ -3,3 +3,15 @@
     name: "{{ python_packages }}"
     state: present
     update_cache: true
+
+- name: Install other packages
+  yum:
+    name: "{{other_packages}}"
+    state: present
+    update_cache: true
+
+- name: Upgrade all packages, excluding kernel & foo related packages.
+  yum:
+    name: '*'
+    state: latest
+    exclude: kernel*, foo*

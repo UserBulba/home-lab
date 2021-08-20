@@ -11,4 +11,7 @@ python_packages:
 - gdbm-devel
 - xz-devel
 - expat-devel
-- postgresql-devel
+- postgresql-
+
+other_packages:
+- wget

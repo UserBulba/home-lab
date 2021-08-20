@@ -11,17 +11,11 @@
       name: "@Development tools"
       state: present
 
-  # Install devel packages.
+  # Install packages.
   roles:
     - { role: python }
 
   tasks:
-  - name: Upgrade all packages, excluding kernel & foo related packages.
-    yum:
-      name: '*'
-      state: latest
-      exclude: kernel*, foo*
-    
   - name: Download Python
     get_url:
       url: http://python.org/ftp/python/3.7.2/Python-{{python_version}}.tar.xz
