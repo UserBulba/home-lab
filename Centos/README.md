@@ -1,19 +1,19 @@
 # Build Centos Stream
 
-First run:
+Run Vagrant:
 
 ```powershell
 .\make.ps1
 ```
 
-Next run:
+Remove Vagrant:
 
-```vagrant
-vagrant up
+```powershell
+.\destroy.ps1
 ```
 
-Install VirtualBox guest system:
+Update Vagrant plugins:
 
-```vagrant
-vagrant plugin install vagrant-vbguest
+```powershell
+.\update.ps1
 ```
