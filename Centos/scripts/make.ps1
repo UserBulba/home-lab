@@ -13,10 +13,12 @@ IF(!(Test-Path $Share))
     }
     Catch {Write-Warning $Error}
 }
-ELSE {Write-Host "Path - $Share - already exists" -ForegroundColor Green}
+ELSE {Write-Host "`nPath - $Share - already exists`n" -ForegroundColor Green}
 
 # Build vagrant.
-Invoke-Expression -Command "vagrant plugin install vagrant-vbguest"
+IF(!$Plugins -match "vagrant-vbguest")
+{Invoke-Expression -Command "vagrant plugin install vagrant-vbguest"}
+
 Invoke-Expression -Command "vagrant up"
 
 Pop-Location
