@@ -1,5 +1,7 @@
 # Build Centos Stream
 
+![Automation](https://i.ytimg.com/vi/lrPlRvFR5fA/hqdefault.jpg)
+
 Run Vagrant:
 
 ```powershell
