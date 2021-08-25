@@ -1,5 +1,6 @@
-### Prepare local machine to be a Vagrant host.
+### Make local machine.
 
+# Prepare local machine to be a Vagrant host.
 [Parameter()][string]$Share = "shared"
 
 Push-Location -Path ..\
@@ -14,6 +15,8 @@ IF(!(Test-Path $Share))
     Catch {Write-Warning $Error}
 }
 ELSE {Write-Host "`nPath - $Share - already exists`n" -ForegroundColor Green}
+
+$Plugins = Invoke-Expression -Command "vagrant plugin list"
 
 # Build vagrant.
 IF(!$Plugins -match "vagrant-vbguest")
