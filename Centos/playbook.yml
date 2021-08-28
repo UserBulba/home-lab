@@ -24,8 +24,17 @@
   - name: Extract Python archive
     unarchive:
       src: /usr/src/Python-{{python_version}}.tar.xz
-      dest: /usr/src/Python-{{python_version}}
+      dest: /usr/src
 
   - name: Expand PATH
     shell: export PATH=$PATH:$HOME/bin
 
+  - name: Configure Python
+    shell: ./configure --enable-optimizations
+    args:
+      chdir: /usr/src/Python-{{python_version}}
+
+  - name: Build Pyhton
+    make:
+      chdir: /usr/src/Python-{{python_version}}
+      target: altinstall

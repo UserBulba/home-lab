@@ -10,8 +10,8 @@
     state: present
     update_cache: true
 
-- name: Upgrade all packages, excluding kernel & foo related packages.
-  yum:
-    name: '*'
-    state: latest
-    exclude: kernel*, foo*
+# - name: Upgrade all packages, excluding kernel & foo related packages.
+#   yum:
+#     name: '*'
+#     state: latest
+#     exclude: kernel*, foo*
