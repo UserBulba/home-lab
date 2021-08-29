@@ -38,3 +38,9 @@
     make:
       chdir: /usr/src/Python-{{python_version}}
       target: altinstall
+
+  # - name: Pip self-update
+  #   pip:
+  #     name: pip3.9
+  #     extra_args: --upgrade --user
+  #     state: latest
