@@ -1,0 +1,8 @@
+---
+- hosts: all
+  become: yes
+  gather_facts: no
+
+  # Install packages.
+  roles:
+    - { role: core }

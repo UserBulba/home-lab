@@ -24,4 +24,6 @@ IF(!$Plugins -match "vagrant-vbguest")
 
 Invoke-Expression -Command "vagrant up"
 
+Invoke-Expression -Command "vagrant rsync-auto"
+
 Pop-Location
