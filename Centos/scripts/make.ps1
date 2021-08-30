@@ -10,11 +10,11 @@ IF(!(Test-Path $Share))
     Try 
     {
         New-Item -Name $Share -Path (Get-Location) -ItemType "directory"
-        Write-Host "Path - $Share - created" -ForegroundColor Yellow
+        Write-Host "synced_folder $Share created" -ForegroundColor Yellow
     }
     Catch {Write-Warning $Error}
 }
-ELSE {Write-Host "`nPath - $Share - already exists`n" -ForegroundColor Green}
+ELSE {Write-Host "`nsynced_folder $Share already exists`n" -ForegroundColor Green}
 
 $Plugins = Invoke-Expression -Command "vagrant plugin list"
 
