@@ -6,7 +6,7 @@
 
 - name: Install other packages
   yum:
-    name: "{{other_packages}}"
+    name: "{{ other_packages }}"
     state: present
     update_cache: true
 
