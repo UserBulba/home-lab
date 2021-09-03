@@ -1,0 +1,28 @@
+# Vagrantfile API/syntax version. Don't touch unless you know what you're doing!
+VAGRANTFILE_API_VERSION = "2"
+
+Vagrant.configure("2") do |config|
+  config.vm.box = "ubuntu/bionic64"
+
+  config.vm.define "app" do |app|
+    app.vm.hostname = "app"
+    app.vm.synced_folder "shared", "/var/www/app", type: "rsync",
+      create: true, group: "vagrant", owner: "vagrant", id: "app", 
+      rsync__auto: true
+
+    app.vm.network "forwarded_port", guest: 8080, host: 8888,
+      auto_correct: true, id: "app_tcp_8080"
+
+    app.vm.provision "docker" do |docker|
+      docker.build_image "/var/www/app", 
+        args: "-t app", restart: true, daemonize: true
+      docker.run "app", args: "-p 8080:8080"
+    end
+  end
+
+  config.vm.define "prom" do |prom|
+    prom.vm.hostname = "prom"
+    prom.vm.network "forwarded_port", guest: 9090, host: 9090,
+      auto_correct: true, id: "prom_tcp_9090"
+  end
+end
