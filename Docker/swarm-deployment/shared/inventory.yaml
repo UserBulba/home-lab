@@ -1,0 +1,5 @@
+all:
+  masters:
+    swarm-master-[1:2]
+  workers:
+    swarm-worker-[1:2]

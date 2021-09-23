@@ -1,0 +1,46 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+# Vagrantfile API/syntax version. Don't touch unless you know what you're doing!
+VAGRANTFILE_API_VERSION = "2"
+
+nodes = [
+  { :hostname => 'swarm-master-1', :ip => '10.10.10.10', :ram => 1024, :cpus => 1 },
+  { :hostname => 'swarm-master-2', :ip => '10.10.10.11', :ram => 1024, :cpus => 1 },
+  { :hostname => 'swarm-worker-1', :ip => '10.10.10.12', :ram => 1024, :cpus => 1 },
+  { :hostname => 'swarm-worker-2', :ip => '10.10.10.13', :ram => 1024, :cpus => 1 }
+]
+
+Vagrant.configure("2") do |config|
+  # Always use Vagrant's insecure key
+  config.ssh.insert_key = false
+  # Forward ssh agent to easily ssh into the different machines
+  config.ssh.forward_agent = true
+
+  # Provision swarm nodes.
+  nodes.each do |node|
+    config.vm.define node[:hostname] do |c01|
+      c01.vm.box = "bento/ubuntu-20.04";
+      c01.vm.hostname = node[:hostname] + ".box"
+      c01.vm.network :private_network, ip: node[:ip]
+      c01.vm.provider "virtualbox" do |vb|
+        vb.customize [
+          "modifyvm", :id, 
+          "--memory", node[:ram], 
+          "--cpus", node[:cpus], 
+          "--hwvirtex", "on"]
+      end
+    end
+  end
+
+  config.vm.define "Anisble" do |c02|
+    c02.vm.hostname = "ans01"
+    c02.vm.network :private_network, ip: "10.10.10.100"
+
+    # Provision Ansible playbook
+    c02.vm.provision "file", source: "ansible", destination: "$HOME"
+
+    # Install Ansible
+    c02.vm.provision 'base', type: 'ansible_local' do |ansible|
+  end
+end

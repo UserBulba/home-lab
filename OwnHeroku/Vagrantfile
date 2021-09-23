@@ -1,0 +1,44 @@
+# Vagrantfile API/syntax version. Don't touch unless you know what you're doing!
+VAGRANTFILE_API_VERSION = "2"
+
+Vagrant::configure('2') do |config|
+  config.vm.define :box1, autostart: false do |box|
+    box.vm.box      = 'raring'
+    box.vm.box_url  = 'https://github.com/mitchellh/vagrant-aws/raw/master/dummy.box'
+    box.vm.hostname = 'example.com'
+
+    # To make sure we use EBS for our tmp files
+    box.vm.provision "shell" do |s|
+      s.privileged = true
+      s.inline = %{
+        mkdir -m 1777 /mnt/tmp
+        echo 'export TMPDIR=/mnt/tmp' > /etc/profile.d/tmpdir.sh
+      }
+    end
+
+    # To make sure packages are up to date
+    box.vm.provision "shell" do |s|
+      s.privileged = true
+      s.inline = %{
+        export DEBIAN_FRONTEND=noninteractive
+        apt-get update
+        apt-get --yes --force-yes upgrade
+      }
+    end
+
+    # Install dokku-alt
+    box.vm.provision "shell" do |s|
+      s.privileged = true
+      s.inline = %{
+        export DEBIAN_FRONTEND=noninteractive
+        echo deb https://get.docker.io/ubuntu docker main > /etc/apt/sources.list.d/docker.list
+        echo deb https://dokku-alt.github.io/dokku-alt / > /etc/apt/sources.list.d/dokku-alt.list
+
+        apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 36A1D7869245C8950F966E92D8576A8BA88D21E9
+        apt-key adv --keyserver pgp.mit.edu --recv-keys EAD883AF
+        apt-get update -y
+        apt-get install -y dokku-alt
+      }
+    end
+  end
+end
