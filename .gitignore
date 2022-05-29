@@ -1,5 +1,14 @@
+# Vagrant
 \.vagrant
 */shared/*
-*.log
-__pycache__
 *.box
+
+# Log files
+*.log
+
+# Python, cache...
+__pycache__
+
+# env
+env
+venv
