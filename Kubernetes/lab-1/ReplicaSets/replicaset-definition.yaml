@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  name: myapp-replicas
+  labels:
+    app: myapp
+    type: frond-end
+spec:
+  template:
+    metadata:
+      name: myapp-pod
+      labels:
+        app: myapp
+        type: frond-end
+    spec:
+      containers:
+        - name: nginx-container
+          image: nginx
+          resources:
+            limits:
+              memory: "128Mi"
+              cpu: "100m"
+
+  replicas: 6
+  selector:
+    matchLabels:  
+      type: frond-end
