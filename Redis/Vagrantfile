@@ -1,0 +1,34 @@
+# -*- mode: ruby -*-
+# Vagrantfile API/syntax version. Don't touch unless you know what you're doing!
+
+VAGRANTFILE_API_VERSION = "2"
+
+Vagrant.configure("2") do |config|
+  config.vm.box = "ubuntu/kinetic64"
+  config.vm.provider "virtualbox" do |vb|
+    vb.memory = "2048"
+    vb.cpus = 1
+    vb.gui = false
+  end
+
+  config.vm.define "redis" do |redis|
+    redis.vm.hostname = "redis"
+    redis.vm.synced_folder "shared", "/opt/redis", type: "rsync",
+      create: true, group: "vagrant", owner: "vagrant", id: "redis", 
+      rsync__auto: true
+
+    redis.vm.network "forwarded_port", guest: 6379, host: 6379,
+      auto_correct: true, id: "6379"
+
+    redis.vm.provision "shell" do |shell|
+      shell.path = "script.sh"
+    end
+
+    redis.vm.provision "docker" do |docker|
+      docker.run "redis", 
+        args: "-v '/opt/redis:/usr/local/etc/redis' -p '6379:6379'",
+        cmd: "redis-server /usr/local/etc/redis/redis.conf"
+    end
+  end
+end
+
