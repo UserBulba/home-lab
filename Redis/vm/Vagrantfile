@@ -1,0 +1,107 @@
+# -*- mode: ruby -*-
+# Vagrantfile API/syntax version. Don't touch unless you know what you're doing!
+
+VAGRANTFILE_API_VERSION = "2"
+NIC = "Intel(R) Dual Band Wireless-AC 8260"
+OS = "ubuntu/kinetic64"
+
+nodes = [
+  { :hostname => 'redis-node-1', :ip => '192.168.55.21', :ram => 1024, :cpus => 1 ,:port => 1},
+  { :hostname => 'redis-node-2', :ip => '192.168.55.22', :ram => 1024, :cpus => 1 ,:port => 2},
+  { :hostname => 'redis-node-3', :ip => '192.168.55.23', :ram => 1024, :cpus => 1 ,:port => 3}
+]
+
+Vagrant.configure("2") do |config|
+
+  # Provision Redis nodes.
+  nodes.each do |node|
+    config.vm.define node[:hostname] do |redis|
+      redis.vm.box = OS
+      redis.vm.hostname = node[:hostname] + ".box"
+      redis.vm.provider "virtualbox" do |vb|
+        vb.gui = false
+        vb.customize [
+          "modifyvm", :id, 
+          "--memory", node[:ram], 
+          "--cpus", node[:cpus]]
+      end
+
+      # Setup IP address.
+      redis.vm.network "public_network" , ip: node[:ip], bridge: NIC
+
+      # # Port Forwarding. 
+      # redis.vm.network "forwarded_port", guest: 6379, host: 10000 + node[:port],
+      #   auto_correct: true, id: "6379"
+      # redis.vm.network "forwarded_port", guest: 8001, host: 8000 +  node[:port],
+      #   auto_correct: true, id: "8001"
+      # redis.vm.network "forwarded_port", guest: 26379, host: 20000 +  node[:port],
+      #   auto_correct: true, id: "26379"
+      # redis.vm.network "forwarded_port", guest: 5000, host: 15000 +  node[:port],
+      #   auto_correct: true, id: "26379"
+
+      # Shared local storage.
+      redis.vm.synced_folder "shared/" + node[:hostname], "/opt/redis", type: "virtualbox",
+        create: true, group: "vagrant", owner: "vagrant", id: "redis", 
+        automount: true
+
+      # Move the configuration file to a temporary directory.
+      redis.vm.provision "file", 
+        source: "conf/sentinel.conf",
+        destination: "/tmp/sentinel.conf"
+
+      # Install redis-cli and configure host.
+      redis.vm.provision "shell" do |shell|
+        shell.path = "sentinel.sh"
+      end
+
+      # Run Redis container.
+      redis.vm.provision "docker" do |docker01|
+        docker01.run "redis/redis-stack", 
+          args: "-v '/opt/redis/conf/redis.conf:/redis-stack.conf' -v '/opt/redis/data:/data' --net=host --name 'redis' --add-host='redis-node-1:192.168.55.21' --add-host='redis-node-2:192.168.55.22' --add-host='redis-node-3:192.168.55.23'"
+      end
+
+      # Run Sentinel container.
+      redis.vm.provision "docker" do |docker02|
+        docker02.run "redis:alpine", 
+          args: "-v '/opt/conf:/usr/local/etc/redis' --net=host --name 'sentinel' --add-host='redis-node-1:192.168.55.21' --add-host='redis-node-2:192.168.55.22' --add-host='redis-node-3:192.168.55.23'", 
+          cmd: "redis-server /usr/local/etc/redis/sentinel.conf --sentinel"
+      end
+    end
+  end
+
+  # Provision HAProxy node.
+  config.vm.define "haproxy-node-1" do |proxy|
+    proxy.vm.box = OS
+    proxy.vm.hostname = "haproxy-node-1"
+    proxy.vm.provider "virtualbox" do |vb|
+      vb.memory = "1024"
+      vb.cpus = 1
+      vb.gui = false
+    end
+  
+    # Setup IP address.
+    proxy.vm.network "public_network", ip: "192.168.55.30", bridge: NIC
+
+    # # Port Forwarding. 
+    # proxy.vm.network "forwarded_port", guest: 1936, host: 1936,
+    #   auto_correct: true, id: "1936"
+    # proxy.vm.network "forwarded_port", guest: 6379, host: 6379,
+    #   auto_correct: true, id: "6379"
+
+    # Move the configuration file to a temporary directory.
+    proxy.vm.provision "file", 
+      source: "conf/haproxy.cfg",
+      destination: "/tmp/haproxy.cfg"
+
+    # Create a configuration path and move config to it.
+    proxy.vm.provision "shell" do |shell|
+      shell.path = "haproxy.sh"
+    end
+
+    # Run HAProxy container.
+    proxy.vm.provision "docker" do |docker03|
+      docker03.run "haproxytech/haproxy-alpine", 
+        args: "-v /conf/:/usr/local/etc/haproxy:ro --net=host --name 'haproxy' --add-host='redis-node-1:192.168.55.21' --add-host='redis-node-2:192.168.55.22' --add-host='redis-node-3:192.168.55.23'"
+    end
+  end
+end

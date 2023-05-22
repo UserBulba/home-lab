@@ -24,10 +24,4 @@ IF(!$Plugins -match "vagrant-vbguest")
 
 Invoke-Expression -Command "vagrant up"
 
-Write-Host "Start rsync-auto..." -ForegroundColor Magenta
-
-# Get-Job -Name rsync | Receive-Job
-$Location = Get-Location
-Start-Job -Name "rsync" -ScriptBlock {Set-Location $args[0]; Invoke-Expression -Command "vagrant rsync-auto"} -ArgumentList $Location
-
 Pop-Location
