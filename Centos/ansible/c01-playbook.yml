@@ -34,7 +34,7 @@
     args:
       chdir: /usr/src/Python-{{python_version}}
 
-  - name: Build Pyhton
+  - name: Build Python
     make:
       chdir: /usr/src/Python-{{python_version}}
       target: altinstall
