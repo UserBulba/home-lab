@@ -1,0 +1,7 @@
+---
+# tasks file for docker
+- name: Import task
+  import_tasks: ubuntu.yml
+  when: ansible_facts['distribution']|lower == 'ubuntu'
+- import_tasks: debian.yml
+  when: ansible_facts['distribution']|lower == 'debian'

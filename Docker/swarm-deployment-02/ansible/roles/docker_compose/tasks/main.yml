@@ -1,0 +1,9 @@
+- name: Downloading Docker-Compose
+  shell:
+    cmd: curl -L "https://github.com/docker/compose/releases/download/{{compose_version}}/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+  become: yes
+
+- name: Installing Docker-Compose
+  shell:
+    cmd: chmod +x /usr/local/bin/docker-compose
+  become: yes

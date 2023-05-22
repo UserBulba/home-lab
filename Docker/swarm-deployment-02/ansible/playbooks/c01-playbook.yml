@@ -1,0 +1,24 @@
+---
+- hosts: all
+  become: true
+
+  # Install Python with pip.
+  pre_tasks:
+  - name: Install Python
+    script: scripts/install_python.sh
+
+  # Install packages.
+  roles:
+    - core
+    - docker
+    - docker_compose
+  tags:
+    - docker, docker_compose
+
+  #  Add user vagrant to the docker group.
+  tasks:
+  - name: Add vagrant to group
+    user:
+      name: vagrant
+      groups: docker
+      append: yes

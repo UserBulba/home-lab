@@ -1,0 +1,14 @@
+---
+# defaults file for docker
+repository_packages:
+- aptitude
+- apt-transport-https
+- ca-certificates
+- curl
+- gnupg
+- lsb-release
+
+docker_packages:
+- docker-ce
+- docker-ce-cli
+- containerd.io
