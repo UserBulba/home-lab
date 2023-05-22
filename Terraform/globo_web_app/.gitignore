@@ -1,0 +1,14 @@
+# Auth
+login.*
+
+# Plan
+*.tfplan
+
+# Ignore any .tfsate files.
+*.tfstate*
+
+# Ignore providers files.
+.terraform/
+
+# Ignore lock files.
+.terraform.lock.hcl
