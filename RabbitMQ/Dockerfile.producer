@@ -1,0 +1,28 @@
+# Use the Python 3.10 image
+FROM python:3.10
+
+# Set the working directory in the container
+WORKDIR /app
+
+# Create a virtual environment named 'venv'
+RUN python -m venv venv
+
+# Activate the virtual environment
+ENV PATH="/app/venv/bin:$PATH"
+
+# Set the environment variable to prevent Python from buffering the output
+ENV PYTHONUNBUFFERED=1
+
+# Copy the producer script and requirements file to the container
+COPY producer.py /app/
+COPY docker/.env /app/
+COPY requirements.txt /app/
+
+# Upgrade pip
+RUN pip install --upgrade pip
+
+# Install the required packages
+RUN pip install -q -r requirements.txt
+
+# Command to run the producer script
+CMD ["/app/venv/bin/python", "producer.py"]
