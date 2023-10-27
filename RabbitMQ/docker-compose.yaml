@@ -1,0 +1,70 @@
+version: '3.8'
+
+services:
+  rabbitmq:
+    image: "bitnami/rabbitmq:latest"
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - data-rabbitmq:/bitnami/rabbitmq/mnesia
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      interval: 5s
+      timeout: 5s
+      retries: 3
+    env_file:
+      - docker/.env
+
+  python_producer:
+    build:
+      context: .
+      dockerfile: Dockerfile.producer
+    image: producer
+    container_name: producer
+    ports:
+      - "5678:5678"
+    environment:
+      - MODE=DEBUG
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      python_worker-1:
+        condition: service_started
+      python_worker-2:
+        condition: service_started
+
+  python_worker-1:
+    build:
+      context: .
+      dockerfile: Dockerfile.consumer
+    image: consumer
+    container_name: worker-1
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+  python_worker-2:
+    build:
+      context: .
+      dockerfile: Dockerfile.consumer
+    image: consumer
+    container_name: worker-2
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+networks:
+  default:
+    name: rabbitmq-network
+    driver: bridge
+
+volumes:
+  data-rabbitmq:
+    name: data-rabbitmq
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: data/rabbitmq
