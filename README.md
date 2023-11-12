@@ -6,6 +6,7 @@ Home laboratory for storing simple projects mainly for learning purposes.
 
 ---
 
+* [RabbitMQ](./RabbitMQ/)
 * [Redis](./Redis/)
 
 ## Authors
