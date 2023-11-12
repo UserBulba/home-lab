@@ -1,11 +1,12 @@
 """send"""
-from private.utility import *
 import os
 import random
 
 import debugpy
 import pika
 from dotenv import load_dotenv
+
+from private.utility import *
 
 load_dotenv()
 
@@ -19,6 +20,7 @@ if debug:
     debugpy.listen(("0.0.0.0", 5678))  # nosec
     debugpy.wait_for_client()
     logger.debug("Waiting for debugger attach")
+
 
 # Function to generate random dots.
 def multiplayer(text: str) -> str:
