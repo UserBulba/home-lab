@@ -13,7 +13,11 @@ ENV PATH="/app/venv/bin:$PATH"
 # Set the environment variable to prevent Python from buffering the output
 ENV PYTHONUNBUFFERED=1
 
+# Set the environment variable to prevent Python from writing pyc files
+ENV PYTHONDONTWRITEBYTECODE=1
+
 # Copy the consumer script and requirements file to the container
+COPY private /app/private
 COPY consumer.py /app/
 COPY docker/.env /app/
 COPY requirements.txt /app/
