@@ -4,6 +4,18 @@
 
 ---
 
+## Pre-requisites
+
+---
+
+Create a `.env` file in the root directory with the following content:
+
+```ini
+RABBITMQ_USERNAME=user
+RABBITMQ_PASSWORD=password
+RABBITMQ_HOST=host
+```
+
 ## Usage
 
 ---
