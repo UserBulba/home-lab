@@ -20,3 +20,12 @@ class Logger:
     def get_severity(self):
         """get_severity - returns severity level"""
         return self.logger.getEffectiveLevel()
+
+
+# TODO: Add a new class to verify the environment variables.
+# class EnvVars:
+#     def check(required_vars: list) -> None:
+#         for var in required_vars:
+#             if os.getenv(var) is None:
+#                 logger.error(f"Error: {var} is not set.")
+#                 sys.exit(1)
