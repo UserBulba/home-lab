@@ -1,4 +1,4 @@
-"""send"""
+"""Producer module."""
 import os
 import random
 
@@ -6,6 +6,7 @@ import debugpy
 import pika
 from dotenv import load_dotenv
 
+from private.rabbit import RabbitConnection
 from private.utility import *
 
 load_dotenv()
@@ -16,7 +17,7 @@ logger.info(f"Log level: {logger.getEffectiveLevel()}")
 
 # Setup debugpy.
 debug = os.getenv("MODE", None)
-if debug:
+if debug == "DEBUG":
     debugpy.listen(("0.0.0.0", 5678))  # nosec
     debugpy.wait_for_client()
     logger.debug("Waiting for debugger attach")
@@ -32,6 +33,10 @@ class Producer:
     def __init__(self, durable: bool = False) -> None:
         self._connection = None
         self.durable = durable
+
+        # Exchange details.
+        self.exchange_type = "topic"
+        self.exchange = "stocks"
 
     def connection(self):
         if not self._connection:
@@ -57,17 +62,22 @@ class Producer:
             except pika.exceptions.AMQPConnectionError as error:
                 logger.error(f"Error closing RabbitMQ connection: {repr(error)}")
 
-    def send(self, message, queue_name: str):
+    def send(self, message: str, binding_key: str) -> None:
         channel = self.connection().channel()
         try:
-            channel.queue_declare(queue=queue_name, durable=self.durable)
+            channel.exchange_declare(
+                exchange=self.exchange,
+                exchange_type=self.exchange_type,
+                durable=self.durable,
+            )
+
         except pika.exceptions.ChannelClosed as error:
             logger.error(f"Error declaring queue: {repr(error)}")
 
         try:
             channel.basic_publish(
-                exchange="",
-                routing_key=queue_name,
+                exchange=self.exchange,
+                routing_key=binding_key,
                 body=message,
                 properties=pika.BasicProperties(
                     delivery_mode=pika.spec.PERSISTENT_DELIVERY_MODE
@@ -83,5 +93,5 @@ class Producer:
 if __name__ == "__main__":
     producer = Producer(durable=True)
     for counter in range(100):
-        producer.send(message=multiplayer("Hello World!"), queue_name="task_queue")
+        producer.send(message=multiplayer("Hello World!"), binding_key="price.stock")
     producer.close()

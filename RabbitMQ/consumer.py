@@ -1,8 +1,9 @@
-"""Consumer for RabbitMQ"""
+"""Analytics consumer."""
 import os
 import sys
 import time
 
+import debugpy
 import pika
 from dotenv import load_dotenv
 
@@ -15,6 +16,13 @@ load_dotenv()
 logger = Logger(__name__, level=os.getenv("MODE", "INFO").upper()).get_logger()
 logger.info(f"Log level: {logger.getEffectiveLevel()}")
 
+# Setup debugpy.
+debug = os.getenv("MODE", None)
+if debug == "DEBUG":
+    debugpy.listen(("0.0.0.0", 5678))  # nosec
+    debugpy.wait_for_client()
+    logger.debug("Waiting for debugger attach")
+
 
 def check_required_env_vars(required_vars: list) -> None:
     for var in required_vars:
@@ -23,43 +31,82 @@ def check_required_env_vars(required_vars: list) -> None:
             sys.exit(1)
 
 
-def main(queue_name: str) -> None:
-    """main loop"""
+class Analytics:
+    def __init__(self, durable: bool = False) -> None:
+        self.durable = durable
 
-    def callback(ch, method, properties, body):
-        logger.info(f" [x] Received {body.decode()}")
-        time.sleep(body.count(b"."))
-        logger.info(" [x] Done")
-        ch.basic_ack(delivery_tag=method.delivery_tag)
+        # Exchange details.
+        self.exchange_type = "topic"
+        self.exchange = "stocks"
+        self.queue_name = "price"
 
-    def consume_messages(channel: pika.channel.Channel):
-        channel.basic_qos(prefetch_count=5)
-        channel.basic_consume(queue=queue_name, on_message_callback=callback)
+    def on_open(self, connection: pika.channel.Channel, binding_key: str):
+        try:
+            logger.info("Connection opened")
 
-        logger.info(" [*] Waiting for messages. To exit press CTRL+C")
-        channel.start_consuming()
+            connection.exchange_declare(
+                exchange=self.exchange,
+                exchange_type=self.exchange_type,
+                durable=self.durable,
+            )
 
-    try:
-        with RabbitConnection(
-            host=os.getenv("RABBITMQ_HOST"),
-            user=os.getenv("RABBITMQ_USERNAME"),
-            password=os.getenv("RABBITMQ_PASSWORD"),
-            queue_name=queue_name,
-            durable=True,
-        ) as channel:
-            consume_messages(channel)
+            connection.queue_declare(queue=self.queue_name, durable=self.durable)
 
-    except pika.exceptions.AMQPConnectionError as error:
-        logger.error(f"Error closing RabbitMQ connection: {repr(error)}")
-        sys.exit(1)
+            connection.queue_bind(
+                exchange=self.exchange,
+                queue=self.queue_name,
+                routing_key=binding_key,
+            )
 
-    except KeyboardInterrupt:
-        logger.info("Interrupted")
-        sys.exit(0)
+            print(connection.queue_declare_passive(queue=self.queue_name).method.message_count)
+
+        except pika.exceptions.AMQPConnectionError as error:
+            logger.error(f"Error initializing RabbitMQ queue: {repr(error)}")
+            sys.exit(1)
+
+    def consume_messages(self, connection: pika.channel.Channel):
+        def callback(ch, method, properties, body):
+            logger.info(f" [x] Received {body.decode()}")
+            time.sleep(body.count(b"."))
+            logger.info(" [x] Done")
+            ch.basic_ack(delivery_tag=method.delivery_tag)
+
+        connection.basic_qos(prefetch_count=5)
+        connection.basic_consume(queue=self.queue_name, on_message_callback=callback)
+
+        logger.info("Waiting for messages.")
+        connection.start_consuming()
+
+    def get(self, binding_key: str) -> None:
+        """main loop"""
+
+        try:
+            with RabbitConnection(
+                host=os.getenv("RABBITMQ_HOST"),
+                user=os.getenv("RABBITMQ_USERNAME"),
+                password=os.getenv("RABBITMQ_PASSWORD"),
+            ) as channel:
+                channel.exchange_declare(
+                    exchange=self.exchange,
+                    exchange_type=self.exchange_type,
+                    durable=self.durable,
+                )
+
+                self.on_open(connection=channel, binding_key=binding_key)
+                self.consume_messages(connection=channel)
+
+        except pika.exceptions.AMQPConnectionError as error:
+            logger.error(f"Error closing RabbitMQ connection: {repr(error)}")
+            sys.exit(1)
+
+        except KeyboardInterrupt:
+            logger.info("Interrupted")
+            sys.exit(0)
 
 
 if __name__ == "__main__":
     required_env_vars = ["RABBITMQ_HOST", "RABBITMQ_USERNAME", "RABBITMQ_PASSWORD"]
     check_required_env_vars(required_env_vars)
 
-    main(queue_name="task_queue")
+    consumer = Analytics(durable=True)
+    consumer.get(binding_key="*.stock")
