@@ -6,8 +6,9 @@ from private.utility import *
 
 # Initialize logger
 logger = Logger(__name__, level=os.getenv("MODE", "INFO").upper()).get_logger()
-logger.info(f"Log level: {logger.getEffectiveLevel()}")
 
+
+# TODO: method to get queue size.
 
 class RabbitConnection:
     def __init__(
@@ -15,20 +16,14 @@ class RabbitConnection:
         host: str,
         user: str,
         password: str,
-        queue_name: str,
         port: int = 5672,
-        durable: bool = True,
     ):
         self.host = host
         self.user = user
         self.password = password
-        self.queue_name = queue_name
         self.port = port
-        self.durable = durable
 
-        logger.info(
-            f"Initialized RabbitConnection: {self.host}:{self.port}/{self.queue_name}"
-        )
+        logger.info(f"Initialized RabbitConnection: {self.host}:{self.port}")
 
     def __enter__(self):
         credentials = pika.PlainCredentials(self.user, self.password)
@@ -44,7 +39,6 @@ class RabbitConnection:
             exit(1)
 
         self.channel = self.connection.channel()
-        self.channel.queue_declare(queue=self.queue_name, durable=self.durable)
 
         return self.channel
 
