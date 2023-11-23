@@ -17,6 +17,22 @@ services:
     env_file:
       - docker/.env
 
+  # rabbitmq-2:
+  #   image: "bitnami/rabbitmq:latest"
+  #   container_name: rabbitmq-2
+  #   ports:
+  #     - "5673:5672"
+  #     - "15673:15672"
+  #   volumes:
+  #     - ?
+  #   healthcheck:
+  #     test: rabbitmq-diagnostics -q ping
+  #     interval: 5s
+  #     timeout: 5s
+  #     retries: 3
+  #   env_file:
+  #     - docker/.env
+
   python_producer:
     build:
       context: .
@@ -26,7 +42,7 @@ services:
     ports:
       - "5678:5678"
     environment:
-      - MODE=DEBUG
+      - MODE=INFO
     depends_on:
       rabbitmq:
         condition: service_healthy
