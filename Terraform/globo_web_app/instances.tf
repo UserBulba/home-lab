@@ -1,4 +1,15 @@
-# INSTANCES #
+##################################################################################
+# DATA
+##################################################################################
+
+data "aws_ssm_parameter" "ami" {
+  name = "/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2"
+}
+
+##################################################################################
+# RESOURCES
+##################################################################################
+
 resource "aws_instance" "nginx1" {
   ami                    = nonsensitive(data.aws_ssm_parameter.ami.value)
   instance_type          = var.instance_type
