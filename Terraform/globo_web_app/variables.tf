@@ -1,21 +1,12 @@
-variable "aws_access_key" {
-  type        = string
-  description = "AWS Access Key"
-  sensitive   = true
-}
-
-variable "aws_secret_key" {
-  type        = string
-  description = "AWS Secret Key"
-  sensitive   = true
-}
+##################################################################################
+# VARIABLES
+##################################################################################
 
 variable "aws_region" {
   type        = string
   description = "AWS Region to use for resources"
-  default     = "eu-central-1"
+  default     = "eu-west-1"
 }
-
 
 variable "enable_dns_hostnames" {
   type        = bool
