@@ -8,7 +8,18 @@ from private.utility import *
 logger = Logger(__name__, level=os.getenv("MODE", "INFO").upper()).get_logger()
 
 
-# TODO: method to get queue size.
+class RabbitUtility:
+    @staticmethod
+    def get_queue_size(connection: pika.channel.Channel, queue_name: str) -> int | None:
+        try:
+            method_frame, _, _ = connection.basic_get(queue=queue_name)
+            if not isinstance(method_frame, pika.spec.Basic.GetOk):
+                return None
+        except pika.exceptions.ChannelClosedByBroker:
+            logger.warning(f"Cannot find queue: {queue_name}")
+            return None
+        return method_frame.message_count
+
 
 class RabbitConnection:
     def __init__(

@@ -7,7 +7,7 @@ import debugpy
 import pika
 from dotenv import load_dotenv
 
-from private.rabbit import RabbitConnection
+from private.rabbit import RabbitConnection, RabbitUtility
 from private.utility import *
 
 load_dotenv()
@@ -40,7 +40,7 @@ class Analytics:
         self.exchange = "stocks"
         self.queue_name = "price"
 
-    def on_open(self, connection: pika.channel.Channel, binding_key: str):
+    def on_open(self, connection: pika.channel.Channel, binding_key: str) -> None:
         try:
             logger.info("Connection opened")
 
@@ -71,11 +71,17 @@ class Analytics:
             logger.info(" [x] Done")
             ch.basic_ack(delivery_tag=method.delivery_tag)
 
-        connection.basic_qos(prefetch_count=5)
-        connection.basic_consume(queue=self.queue_name, on_message_callback=callback)
+        try:
+            connection.basic_qos(prefetch_count=5)
+            connection.basic_consume(
+                queue=self.queue_name, on_message_callback=callback
+            )
 
-        logger.info("Waiting for messages.")
-        connection.start_consuming()
+            logger.info("Waiting for messages.")
+            connection.start_consuming()
+        except pika.exceptions.ChannelWrongStateError as error:
+            logger.error(f"Error consuming messages: {repr(error)}")
+            sys.exit(1)
 
     def get(self, binding_key: str) -> None:
         """main loop"""
@@ -93,6 +99,13 @@ class Analytics:
                 )
 
                 self.on_open(connection=channel, binding_key=binding_key)
+
+                queue_size = RabbitUtility.get_queue_size(channel, self.queue_name)
+                if isinstance(queue_size, int):
+                    logger.info("Current queue size: {}".format(queue_size))
+                else:
+                    logger.warning("Unable to retrieve queue size.")
+
                 self.consume_messages(connection=channel)
 
         except pika.exceptions.AMQPConnectionError as error:

@@ -1,5 +1,6 @@
 # Auth
 login.*
+logout.*
 
 # .pem files
 *.pem
