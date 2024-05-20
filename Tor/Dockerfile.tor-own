@@ -1,0 +1,19 @@
+# Use the latest Alpine image
+FROM alpine:latest
+
+# Install Tor
+RUN apk add --no-cache tor
+
+# Create and set the Tor data directory
+RUN mkdir -p /var/lib/tor && chown -R tor:tor /var/lib/tor
+VOLUME /var/lib/tor
+
+# Copy your torrc configuration file into the container
+COPY torrc /etc/tor/torrc
+
+# Expose ports if needed (for example for relay, not needed for hidden services only)
+# EXPOSE 9001 9030
+
+# Run Tor (non-daemon mode)
+USER tor
+CMD ["tor", "-f", "/etc/tor/torrc"]
