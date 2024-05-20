@@ -58,7 +58,7 @@ class Analytics:
                 routing_key=binding_key,
             )
 
-            print(connection.queue_declare_passive(queue=self.queue_name).method.message_count)
+            # print(connection.queue_declare_passive(queue=self.queue_name).method.message_count)
 
         except pika.exceptions.AMQPConnectionError as error:
             logger.error(f"Error initializing RabbitMQ queue: {repr(error)}")
