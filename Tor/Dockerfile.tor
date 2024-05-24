@@ -3,9 +3,9 @@
 # Use the latest Alpine image
 FROM alpine:latest
 
-LABEL maintainer=""
+LABEL maintainer="Piotr K."
 LABEL version="1.0"
-LABEL description="This service runs a Tor client."
+LABEL description=""
 LABEL vendor=""
 
 # Install Tor
