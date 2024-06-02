@@ -1,4 +1,4 @@
-![](/images/logo.jpg)
+![](images/logo.jpg)
 
 # Tor website
 
